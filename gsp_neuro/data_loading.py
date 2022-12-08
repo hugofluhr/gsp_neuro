@@ -21,11 +21,11 @@ def get_sub_connectomes_paths(subject_path):
     connectome_paths.sort()
     return connectome_paths
 
-def load_connectome(connectome_path):
+def load_connectome(connectome_path, field = "nFiber"):
     data = loadmat(connectome_path).get("newConnMat")
     fields = list(data[0,0].dtype.fields.keys())
     try :
-        connectome = data[0,0]['nFiber']
+        connectome = data[0,0][field]
         print("Succesfully loaded a connectome with {} nodes.".format(connectome.shape[0]))
         return connectome.astype(np.single)
     except  :
