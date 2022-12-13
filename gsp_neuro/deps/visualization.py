@@ -11,6 +11,36 @@ import pandas as pd
 
 def plot_surface_ld(roi_values, scale, center_at_zero=False, cmap='magma',
                   vmin=None, vmax=None, fig=None, axs=None,label_dir = './'):
+    """plot brain surface 
+
+    Parameters
+    ----------
+    roi_values
+        data to be plotted
+    scale
+        Lausanne parcellation scale
+    center_at_zero, optional
+        -, by default False
+    cmap, optional
+        -, by default 'magma'
+    vmin, optional
+        -, by default None
+    vmax, optional
+        -, by default None
+    fig, optional
+        -, by default None
+    axs, optional
+        -, by default None
+    label_dir, optional
+        directory containing annotations, by default './'
+
+    Returns
+    -------
+    fig
+        -
+    axs 
+        -
+    """
     
     annots = [os.path.join(label_dir,'data','plotting','label','rh.lausanne2008.scale{}.annot'.format(scale)),
               os.path.join(label_dir,'data','plotting','label','lh.lausanne2008.scale{}.annot'.format(scale))]
