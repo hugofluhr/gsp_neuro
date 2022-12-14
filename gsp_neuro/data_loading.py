@@ -1,5 +1,5 @@
 import csv
-import os
+from os.path import join as pjoin
 from scipy.io import loadmat
 import numpy as np
 import pandas as pd
@@ -22,7 +22,7 @@ def get_sub_connectomes_paths(subject_path, scale=1):
 		subject_path = [subject_path]
 
 	for sub_path in subject_path :	
-		connectome_paths.append(glob(os.path.join(sub_path,'**/*scale{}*.mat'.format(scale)), recursive=True)[0])
+		connectome_paths.append(glob(pjoin(sub_path,'**/*scale{}*.mat'.format(scale)), recursive=True)[0])
 
 	connectome_paths.sort()
 	return connectome_paths
@@ -65,7 +65,7 @@ def read_fscolorlut(lutFile):
 
 	return pd.DataFrame.from_dict({'st_code':st_codes, 'st_name':st_names,'R':st_red,'G':st_green,'B':st_blue})
 
-def read_coords(data_path = '/home/localadmin/Bureau/HUGO/data/', scale=1):
+def read_coords(data_path = '/Users/hugofluhr/chuv/data/', scale=1):
 	file_path = glob(data_path + 'requestionforconnectomes/*.scale{}.*regCoords.txt'.format(scale))[0]
 	df_coord = pd.read_csv(file_path)
 	df_coord.rename(columns=lambda x: x.strip(), inplace=True)
@@ -76,3 +76,29 @@ def read_coords(data_path = '/home/localadmin/Bureau/HUGO/data/', scale=1):
 	
 def get_ctx_indices(df):
     return list(df[df["Structures Names"].str.contains('ctx')].index)
+
+
+def get_signal(data_path, subject, signal, scale, mtype='mean'):
+    file_path = glob(pjoin(data_path, "biopyscho_ctrls_signals/{}-sc{}*.csv".format(signal, scale)))[0]
+    df = pd.read_csv(file_path)
+
+    df_coords = read_coords(scale=scale)
+    rois2keep = list(df_coords[df_coords["Structures Names"].str.contains('ctx')]['Structures Names'])
+
+    roi_columns = {roi : [i for i, s in enumerate(list(df.columns)) if roi in s] for roi in rois2keep}
+    if mtype == 'mean':
+        data_cols = [roi_columns[roi][0] for roi in roi_columns.keys()]
+    elif mtype == 'std':
+        data_cols = [roi_columns[roi][1] for roi in roi_columns.keys()]
+
+    signal = df.iloc[df.index[df['participant_id']==subject],data_cols].values
+
+    return signal[0]
+
+def load_mesh(data_path):
+	mesh = {'inflated_left' : pjoin(data_path,'requestionforconnectomes/lh.inflated.gii'),
+        'pial_left' : pjoin(data_path,'requestionforconnectomes/lh.pial.gii'),
+        'inflated_right': pjoin(data_path,'requestionforconnectomes/rh.inflated.gii'),
+        'pial_right' : pjoin(data_path,'requestionforconnectomes/rh.pial.gii')}
+	
+	return mesh
