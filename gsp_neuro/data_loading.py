@@ -30,7 +30,7 @@ def get_sub_connectomes_paths(subject_path, scale=1):
 def load_connectome(connectome_path, field = "nFiber"):
 	data = loadmat(connectome_path).get("newConnMat")
 	fields = list(data[0,0].dtype.fields.keys())
-
+	# fields : ['nFiber', 'Length', 'fibDensity', 'nVoxMat', 'gFA', 'MD']
 	try :
 		connectome = data[0,0][field]
 		length_mat = data[0,0]['Length']
