@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.spatial.distance import cdist
+from scipy.spatial.distance import pdist, squareform
 
 
 def distance_matrix(coordinates):
@@ -17,7 +17,7 @@ def distance_matrix(coordinates):
         Distance matrix
     """
 
-    dist_matrix = cdist(coordinates, coordinates)
+    dist_matrix = squareform(pdist(coordinates))
     return dist_matrix
 
 
@@ -55,6 +55,14 @@ def fcn_group_bins(adjacencies, distance, nbins, hemiid = None):
     consistency = np.sum(adjacencies > 0, axis=2)
     grp, gc = np.zeros((2, n, n, 2))
 
+    # compute mean weight of each edge, mean using consistency (ignores 0 edges)
+    av_weight = np.divide(
+        np.sum(adjacencies, axis=2),
+        consistency,
+        out=np.zeros((n, n)),
+        where=consistency != 0,
+    )
+
     for j in range(2):
         # mask for inter- / intra- hemisphere connections
         if j == 0: #intra-hemisphere
@@ -74,24 +82,24 @@ def fcn_group_bins(adjacencies, distance, nbins, hemiid = None):
         for ibin in range(nbins): # looping over distance bins
             mask = np.triu((m >= dist_bins[ibin]) & (m < dist_bins[ibin + 1]), 1) #create a mask for distances/edges in current bin
             mask1d = mask.flatten()
-            mask1d_indices = np.argwhere(mask1d).flatten() # 1d indices of edges of interest
-            frac = int(
+            mask1d_indices = np.argwhere(mask1d).flatten() # 1d indices of edges of interest in current bin
+
+            # compute how many edges to keep for this distance bin
+            # is equal to mean nb of connection per subject multiplied by fraction of distances in current bin
+            nb_edges2keep_in_bin = int(
                 np.round(
                     tgt * np.mean((D >= dist_bins[ibin]) & (D < dist_bins[ibin + 1])) # 
                 )
             )
+
+            # keep nb_edges2keep_in_bin edges with highest consistency across subjects
             idx = np.argsort(consistency[mask])
             idx = np.flip(idx)
-            g[np.unravel_index(mask1d_indices[idx[:frac]], g.shape)] = 1
+            g[np.unravel_index(mask1d_indices[idx[:nb_edges2keep_in_bin]], g.shape)] = 1
         grp[..., j] = g
 
         # Consistency based thresholding
-        av_weight = np.divide(
-            np.sum(adjacencies, axis=2),
-            consistency,
-            out=np.zeros((n, n)),
-            where=consistency != 0,
-        )
+
         # indices of current connections of interest
         I = np.where(np.triu(d, 1))
         w = av_weight[I]
@@ -106,74 +114,4 @@ def fcn_group_bins(adjacencies, distance, nbins, hemiid = None):
     G = G + G.T
     Gc = np.sum(gc, axis=2)
     Gc = Gc + Gc.T
-    return G, Gc
-
-
-# chatGPT version :
-import numpy as np
-
-def chat_GPT_fcn_group_bins(A, dist, nbins, hemiid = None):
-    # Create an array of distance bins
-    distbins = np.linspace(np.min(np.nonzero(dist)), np.max(np.nonzero(dist)), nbins + 1)
-    distbins[-1] += 1
-
-    # Get the number of nodes and subjects
-    n, _, nsub = A.shape
-
-    if hemiid is None:
-        hemiid = np.zeros((n,))
-        hemiid[n//2:] = 1
-    # Compute the consistency and average weight matrices
-    C = np.sum(A > 0, axis=2)
-    W = np.nan_to_num(np.sum(A, axis=2) / C)
-
-    # Initialize the group and consistency matrices
-    Grp = np.zeros((n, n, 2))
-    Gc = Grp
-
-    for j in range(2):
-        # Create the inter- or intra-hemispheric edge mask
-        if j == 0:
-            d = (hemiid == 0) * (hemiid.T == 1)
-            d = d | d.T
-        else:
-            d = (hemiid == 0) * (hemiid.T == 0) | (hemiid == 1) * (hemiid.T ==1)
-            d = d | d.T
-
-        # Compute the distances for the current edge mask
-        m = dist * d
-        D = np.nonzero(np.multiply(A > 0, np.multiply(dist, np.triu(d))))
-        tgt = len(D) / nsub
-
-        # Initialize the group matrix
-        G = np.zeros((n, n))
-
-        # Loop over the distance bins
-        for ibin in range(nbins):
-            # Find the edges that fall within the current bin
-            mask = np.nonzero(np.triu(m >= distbins[ibin] & m < distbins[ibin + 1], 1))
-            frac = round(tgt * np.sum(D >= distbins[ibin] & D < distbins[ibin + 1]) / len(D))
-
-            # Sort the edges by consistency and select the top "frac" edges
-            c = C[mask]
-            idx = np.argsort(c)[::-1]
-            G[mask[idx[:frac]]] = 1
-
-        # Store the group matrix for the current hemisphere
-        Grp[:, :, j] = G
-
-        # Compute the consistency-based group matrix for the current hemisphere
-        I = np.nonzero(np.triu(d, 1))
-        w = W[I]
-        idx = np.argsort(w)[::-1]
-        w = np.zeros((n, n))
-        w[I[idx[:np.count_nonzero(G)]]] = 1
-        Gc[:, :, j] = w
-
-    # Compute the final group and consistency matrices
-    G = np.sum(Grp, axis=2)
-    G = G + G.T
-    Gc = np.sum(Gc, axis=2)
-    Gc = Gc + Gc.T
-
-    return G, Gc
+    return G, Gc, av_weight
