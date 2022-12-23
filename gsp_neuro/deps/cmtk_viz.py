@@ -10,14 +10,14 @@ import nibabel as nib
 import numpy as np
 import matplotlib.pyplot as plt
 from nilearn import plotting, datasets
+import sys 
 
-from cmtklib.data.parcellation.util import (
-    get_lausanne2018_parcellation_annot
-)
+sys.path.append("/Users/hugofluhr/chuv/repositories/gsp_neuro/gsp_neuro/deps")
+from cmtk_util import get_lausanne2018_parcellation_annot
 
 
 def plot_lausanne2018_surface_ctx(
-    roi_values, scale='scale1',
+    roi_values, scale=1,
     cmap="Spectral",
     save_fig=False, output_dir="./", filename=None, fmt="png"
 ):
@@ -100,7 +100,7 @@ def plot_lausanne2018_surface_ctx(
         'lateral', 'lateral', 'medial', 'medial',
         'ventral', 'ventral', 'dorsal', 'dorsal'
     ]
-    surfaces = [f'pial_{hemi}' for hemi in hemis]
+    surfaces = [f'infl_{hemi}' for hemi in hemis]
     bg_maps = [f'sulc_{hemi}' for hemi in hemis]
     roi_vectors = [roi_vect_right, roi_vect_left]*4
 
