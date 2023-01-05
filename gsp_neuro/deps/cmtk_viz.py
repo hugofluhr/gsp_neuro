@@ -10,10 +10,8 @@ import nibabel as nib
 import numpy as np
 import matplotlib.pyplot as plt
 from nilearn import plotting, datasets
-import sys 
 
-sys.path.append("/Users/hugofluhr/chuv/repositories/gsp_neuro/gsp_neuro/deps")
-from cmtk_util import get_lausanne2018_parcellation_annot
+from gsp_neuro.deps.cmtk_util import get_lausanne2018_parcellation_annot
 
 
 def plot_lausanne2018_surface_ctx(
