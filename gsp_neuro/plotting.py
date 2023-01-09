@@ -32,12 +32,11 @@ def plot_signal_3d(brain, signal, mesh_type="inflated_whole", cmap = "Spectral")
     mesh_files = dload.load_mesh(brain.data_path)
 
     hemi = mesh_type.split("_")[1]
-    #signal2plot = np.nan_to_num((mesh_signals[hemi]))
-    signal2plot = mesh_signals[hemi]
+    signal2plot = np.nan_to_num((mesh_signals[hemi]))
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         surf = plotting.view_surf(
-            mesh_files[mesh_type], signal2plot, symmetric_cmap=sym_map, cmap=cmap
+            mesh_files[mesh_type], signal2plot, symmetric_cmap=sym_map, cmap=cmap, threshold = 1e-6
         )
 
     return surf
