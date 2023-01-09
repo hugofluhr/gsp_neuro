@@ -6,12 +6,11 @@
 
 """Module that defines CMTK utility functions for plotting Lausanne parcellation files."""
 
-import nibabel as nib
-import numpy as np
 import matplotlib.pyplot as plt
-from nilearn import plotting, datasets
+from nilearn import datasets, plotting
 
 from gsp_neuro.deps.cmtk_util import get_lausanne2018_parcellation_annot
+from gsp_neuro.utils import atlas2mesh_space
 
 
 def plot_lausanne2018_surface_ctx(
@@ -55,29 +54,7 @@ def plot_lausanne2018_surface_ctx(
     # Surface mesh
     fsaverage = datasets.fetch_surf_fsaverage(mesh="fsaverage")
 
-    # File paths to the annot files
-    annots = [get_lausanne2018_parcellation_annot(scale=f'{scale}', hemi='rh'),
-              get_lausanne2018_parcellation_annot(scale=f'{scale}', hemi='lh')]
-
-    # Read annot files
-    annot_right = nib.freesurfer.read_annot(annots[0])
-    annot_left = nib.freesurfer.read_annot(annots[1])
-
-    # Create vector to store intensity values (one value per vertex)
-    roi_vect_right = np.zeros_like(annot_right[0], dtype=float)
-    roi_vect_left = np.zeros_like(annot_left[0], dtype=float)
-
-    # Convert labels to strings, labels are the same as 2018 is symmetric
-    labels = [str(elem, 'utf-8') for elem in annot_right[2]]
-
-    # Create roi vectors
-    for i in range(len(labels[1:])):  # skip 'unknown'
-        ids_roi = np.where(annot_right[0] == i+1)[0]
-        roi_vect_right[ids_roi] = roi_values[i]
-
-    for i in range(len(labels[1:])):  # skip 'unknown'
-        ids_roi = np.where(annot_left[0] == i+1)[0]
-        roi_vect_left[ids_roi] = roi_values[i+len(labels)-1]
+    signal_mesh_space = atlas2mesh_space(roi_values, scale)
 
     # Get min and max values
     vmin = min(roi_values)
@@ -100,7 +77,7 @@ def plot_lausanne2018_surface_ctx(
     ]
     surfaces = [f'infl_{hemi}' for hemi in hemis]
     bg_maps = [f'sulc_{hemi}' for hemi in hemis]
-    roi_vectors = [roi_vect_right, roi_vect_left]*4
+    roi_vectors = [signal_mesh_space['right'], signal_mesh_space['left']]*4
 
     # Initial a figure with [2 x 4] subplots
     fig, axs = plt.subplots(nrows=2, ncols=4,
