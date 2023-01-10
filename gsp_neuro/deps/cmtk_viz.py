@@ -95,9 +95,10 @@ def plot_lausanne2018_surface_ctx(
                                darkness=.5,
                                cmap=cmap, vmin=vmin, vmax=vmax,
                                axes=ax)
-
     # Save the figure in the desired format if enabled
     if save_fig:
         if filename is None:
             filename = f'atlas-{scale}_projection'
         fig.savefig(f'{output_dir}/{filename}.{fmt}')
+    
+    return fig
