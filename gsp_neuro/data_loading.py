@@ -47,9 +47,16 @@ def get_sub_connectomes_paths(subject_path, scale=1):
         subject_path = [subject_path]
 
     for sub_path in subject_path:
-        connectome_paths.append(
-            glob(op.join(sub_path, "**/*scale{}*.mat".format(scale)), recursive=True)[0]
-        )
+        if "consensus" in sub_path:
+            connectome_paths.append(
+                glob(op.join(sub_path, "*scale{}.npz".format(scale)), recursive=True)[0]
+            )
+        else:
+            connectome_paths.append(
+                glob(
+                    op.join(sub_path, "**/*scale{}*.mat".format(scale)), recursive=True
+                )[0]
+            )
 
     connectome_paths.sort()
     return connectome_paths
@@ -68,6 +75,11 @@ def load_connectome(connectome_path, field="fibDensity"):
         return connectome.astype(np.single)
     except:
         print("No nFiber field in the file")
+
+
+def load_consensus(consensus_path):
+    data = np.load(consensus_path)
+    return data["G"] * data["av_weight"]
 
 
 def read_fscolorlut(lutFile):

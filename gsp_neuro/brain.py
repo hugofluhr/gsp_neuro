@@ -12,7 +12,11 @@ class Brain:
         self.signals = {}
 
     def load_graph(self, lap_type = 'normalized'):
-        self.G = graphs.Graph(dload.load_connectome(self.path, field=self.field), lap_type=lap_type)
+
+        if self.sub_ID == 'consensus':
+            self.G = graphs.Graph(dload.load_consensus(self.path), lap_type=lap_type)
+        else:
+            self.G = graphs.Graph(dload.load_connectome(self.path, field=self.field), lap_type=lap_type)
     
         # node coordinates :
         df_coords = dload.read_coords(scale=self.scale)
@@ -24,6 +28,11 @@ class Brain:
         self.G.compute_fourier_basis()
 
     def add_signal(self, signal_type):
+        # TO DO can give dict as input 
         self.signals.update({signal_type : dload.get_signal(self.data_path, self.sub_ID, 
                                                 signal_type, self.scale)})
 
+
+class Subject:
+    def __init__(self) -> None:
+        pass
