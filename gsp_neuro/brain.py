@@ -11,7 +11,7 @@ class Brain:
         self.field = field
         self.signals = {}
 
-    def load_graph(self, lap_type = 'normalized'):
+    def load_graph(self, lap_type = 'normalized', keep_sub_cortical = False):
 
         if self.sub_ID == 'consensus':
             self.G = graphs.Graph(dload.load_consensus(self.path), lap_type=lap_type)

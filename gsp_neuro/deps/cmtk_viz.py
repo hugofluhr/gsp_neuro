@@ -16,7 +16,7 @@ from gsp_neuro.utils import atlas2mesh_space
 def plot_lausanne2018_surface_ctx(
     roi_values, scale=1,
     cmap="Spectral",
-    save_fig=False, output_dir="./", filename=None, fmt="png"
+    save_fig=False, outpath = None
 ):
     """
     Plots a set of values on the cortical surface of a given Lausanne 2018 parcellation scale.
@@ -95,10 +95,14 @@ def plot_lausanne2018_surface_ctx(
                                darkness=.5,
                                cmap=cmap, vmin=vmin, vmax=vmax,
                                axes=ax)
+
+
+    # stuff from Joan code
+    axs[2].view_init(elev=90, azim=270)
+    axs[3].view_init(elev=270, azim=90)
+
     # Save the figure in the desired format if enabled
-    if save_fig:
-        if filename is None:
-            filename = f'atlas-{scale}_projection'
-        fig.savefig(f'{output_dir}/{filename}.{fmt}')
+    if outpath != None:
+        fig.savefig(outpath)
     
-    return fig
+    #return fig

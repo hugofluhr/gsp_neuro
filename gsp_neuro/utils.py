@@ -72,3 +72,23 @@ def atlas2mesh_space(roi_values, scale):
         "right": roi_vect_right,
         "whole": np.concatenate((roi_vect_left, roi_vect_right), axis=0),
     }
+
+
+def compute_spectral_density(brain, signal, n_bands = 3):
+    
+    # start at 1 to get rid of continuous component
+    x = np.arange(1, int(brain.G.N))
+    bands = np.array_split(x, n_bands)
+    signal_gft = brain.G.gft(brain.signals[signal])
+    spectral_power = np.square(signal_gft)
+    norm_factor = np.sum(spectral_power[1:])
+    normed_power = 1/norm_factor * spectral_power
+
+    power_in_bands = tuple(np.sum(np.square(signal_gft[bands[i]]))/norm_factor for i in range(n_bands))
+    return normed_power, power_in_bands    
+
+
+def prune_adjacency(adjacency, thresh=80):
+    new_adj = np.zeros_like(adjacency)
+    new_adj[adjacency>np.percentile(adjacency,thresh)] = adjacency[adjacency>np.percentile(adjacency,thresh)]
+    return new_adj
