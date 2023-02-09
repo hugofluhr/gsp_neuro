@@ -27,12 +27,18 @@ class Brain:
         self.adjacency = self.G.W.toarray()
         self.G.compute_fourier_basis()
 
-    def add_signal(self, signal_type):
+    def add_signal(self, signal_type, roi_values = None):
         # TO DO can give dict as input 
-        self.signals.update({signal_type : dload.get_signal(self.data_path, self.sub_ID, 
-                                                signal_type, self.scale)})
+        if roi_values is None:
+            self.signals.update({signal_type : dload.get_signal(self.data_path, self.sub_ID, 
+                                                    signal_type, self.scale)})
+        else : 
+            self.signals.update({signal_type : roi_values})
 
-
-class Subject:
-    def __init__(self) -> None:
-        pass
+    def get_signal(self, signal_type):
+        if signal_type in self.signals.keys():
+            return self.signals[signal_type]
+        elif isinstance(signal_type, int):
+            return self.G.U[:, signal_type]
+        else:
+            raise Exception("Unknown signal")
