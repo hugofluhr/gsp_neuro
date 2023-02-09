@@ -26,7 +26,7 @@ def extract_roi(regions):
 
 
 def regions_in_file(file):
-    with open(file, newline="") as f:
+    with open(file, newline= "") as f:
         reader = csv.reader(f)
         headers = next(reader)
     regions = headers[9:-1:2]
@@ -40,7 +40,7 @@ def split_lr_rois(ROIs):
     return {"rh": rh_rois, "lh": lh_rois}
 
 
-def atlas2mesh_space(roi_values, scale):
+def  atlas2mesh_space(roi_values, scale):
 
     annots = [
         get_lausanne2018_parcellation_annot(scale=f"{scale}", hemi="rh"),

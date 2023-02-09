@@ -14,7 +14,12 @@ from gsp_neuro.deps.cmtk_viz import (
 
 
 def plot_connectome(
-    brain, thresh=None, black_bg=False, cmap="gist_heat", node_color=[[46/255,120/255,176/255.,0.5]], output_file=None
+    brain,
+    thresh=None,
+    black_bg=False,
+    cmap="gist_heat",
+    node_color=[[46 / 255, 120 / 255, 176 / 255.0, 0.5]],
+    output_file=None,
 ):
     if thresh == None:
         thresh = 94 + brain.scale
@@ -35,12 +40,7 @@ def plot_connectome(
 
 def plot_signal_2d(brain, signal, cmap="Spectral", outpath=None):
 
-    if signal in brain.signals.keys():
-        roi_values = brain.signals[signal]
-    elif isinstance(signal, int):
-        roi_values = brain.G.U[:, signal]
-    else:
-        raise Exception("Unknown signal")
+    roi_values = brain.get_signal(signal)
 
     plot_lausanne2018_surface_ctx(
         roi_values, scale=brain.scale, cmap=cmap, outpath=outpath
@@ -59,13 +59,9 @@ def plot_signal_3d(
 ):
 
     sym_map = False
-    if signal in brain.signals.keys():
-        roi_values = brain.signals[signal]
-    elif isinstance(signal, int):
-        roi_values = brain.G.U[:, signal]
+    roi_values = brain.get_signal(signal)
+    if isinstance(signal, int):
         sym_map = True
-    else:
-        raise Exception("Unknown signal")
 
     mesh_signals = ut.atlas2mesh_space(roi_values, brain.scale)
     mesh_files = dload.load_mesh(brain.data_path)
@@ -120,7 +116,7 @@ def plot_spectral_density(brain, signal, n_bands=3, savefig=False, out_path=None
     elif signal == "pial_lgi":
         signal_name = "Local Gyrification Index"
 
-    fig, ax = plt.subplots(figsize=(6,6))
+    fig, ax = plt.subplots(figsize=(6, 6))
 
     # ax.plot(x,normed_power[x],'k', lw=1)
     markerline, _, _ = ax.stem(
@@ -136,7 +132,7 @@ def plot_spectral_density(brain, signal, n_bands=3, savefig=False, out_path=None
     alpha = 0.3
     text_kwargs = dict(ha="center", va="center")
 
-    #TO DO : handle different number of bands!
+    # TO DO : handle different number of bands!
     # ax.fill_between(
     #     [0, bands[0][-1] - 0.5], 0, ymax - abs(ymin), alpha=alpha, color=cm[-4]
     # )  # color='#fee8c8')
@@ -179,25 +175,31 @@ def plot_spectral_density(brain, signal, n_bands=3, savefig=False, out_path=None
     ax.set_ylabel("Normalized Power")
 
     # better to use lambdas on x-axis
-    #ax.set_xticks(np.linspace(0, x[-1], 11))
-    #ax.set_xticklabels(np.round(np.linspace(0, 1, 11), 2))
+    # ax.set_xticks(np.linspace(0, x[-1], 11))
+    # ax.set_xticklabels(np.round(np.linspace(0, 1, 11), 2))
 
-    #ax.set_title("Spectral Power Density of " + signal_name)
+    # ax.set_title("Spectral Power Density of " + signal_name)
     ax.set_title("Spectral Power Density")
 
     plt.show()
 
     return fig
 
+
 def plot_signal_on_pruned_graph(brain, signal, title=None):
 
     small_graph = brain.G.subgraph(np.arange(68))
-    small_graph = graphs.Graph(ut.prune_adjacency(small_graph.W.toarray(), 92), coords=small_graph.coords[:,(1,2)])
-    small_graph.plotting['edge_color'] = (0.5,0.5,0.5,1)
+    small_graph = graphs.Graph(
+        ut.prune_adjacency(small_graph.W.toarray(), 92),
+        coords=small_graph.coords[:, (1, 2)],
+    )
+    small_graph.plotting["edge_color"] = (0.5, 0.5, 0.5, 1)
 
-    plt.set_cmap('plasma')
-    fig_signal, ax= small_graph.plot(brain.signals[signal][:68], edges=True, vertex_size=300, title = title)
-    fig_signal.set_size_inches(8,7)
-    plt.axis('off')
+    plt.set_cmap("plasma")
+    fig_signal, ax = small_graph.plot(
+        brain.signals[signal][:68], edges=True, vertex_size=300, title=title
+    )
+    fig_signal.set_size_inches(8, 7)
+    plt.axis("off")
 
     return fig_signal
