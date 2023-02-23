@@ -11,6 +11,9 @@ class Brain:
         self.field = field
         self.signals = {}
 
+    def __str__(self):
+        return 'subject : {}, scale : {}'.format(self.sub_ID, self.scale)
+
     def load_graph(self, lap_type = 'normalized', keep_sub_cortical = False):
 
         if self.sub_ID == 'consensus':
