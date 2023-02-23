@@ -24,6 +24,9 @@ def extract_roi(regions):
         rois = rois[0]
     return rois, col_idx
 
+def nROIs(scale):
+    nROIs_per_scale = [68, 114, 216, 446, 1002]
+    return nROIs_per_scale[scale-1]
 
 def regions_in_file(file):
     with open(file, newline= "") as f:
