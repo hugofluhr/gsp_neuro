@@ -40,7 +40,11 @@ def plot_connectome(
 
 def plot_signal_2d(brain, signal, cmap="Spectral", outpath=None):
 
-    roi_values = brain.get_signal(signal)
+
+    if isinstance(signal, np.ndarray) : 
+        roi_values = signal
+    else:
+        roi_values = brain.get_signal(signal)
 
     plot_lausanne2018_surface_ctx(
         roi_values, scale=brain.scale, cmap=cmap, outpath=outpath
@@ -59,7 +63,10 @@ def plot_signal_3d(
 ):
 
     sym_map = False
-    roi_values = brain.get_signal(signal)
+    if isinstance(signal, np.ndarray) : 
+        roi_values = signal
+    else:
+        roi_values = brain.get_signal(signal)
     if isinstance(signal, int):
         sym_map = True
 
@@ -77,7 +84,7 @@ def plot_signal_3d(
             vmax=vmax,
             cmap=cmap,
             colorbar_height=0.6,
-            # threshold=1e-6,  # problem with threshold because sometime signals have zero values
+            #threshold=1e-6,  # problem with threshold because sometime signals have zero values
             black_bg=black_bg,
             title=title,
         )
