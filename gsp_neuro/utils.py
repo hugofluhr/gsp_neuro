@@ -2,6 +2,8 @@ import re
 import csv
 import numpy as np
 import nibabel as nib
+import networkx as nx
+from pygsp import graphs
 from gsp_neuro.deps.cmtk_util import get_lausanne2018_parcellation_annot
 
 
@@ -95,3 +97,30 @@ def prune_adjacency(adjacency, thresh=80):
     new_adj = np.zeros_like(adjacency)
     new_adj[adjacency>np.percentile(adjacency,thresh)] = adjacency[adjacency>np.percentile(adjacency,thresh)]
     return new_adj
+
+
+def create_tiny_brain(coords, edge_list, plotting_kws = {}):
+    default_plot_kws = {'edge_color':[.6,.6,.6],
+                        'vertex_size':120,
+                        'edge_width':2.8,
+                        'vertex_color':[.2,.2,.2],
+                        'sig_width':3.5}
+    default_plot_kws.update(plotting_kws)
+
+    tiny_brain = nx.Graph()
+    tiny_brain.add_edges_from(edge_list)
+    tiny_brain = graphs.Graph(nx.to_numpy_array(tiny_brain))
+    tiny_brain.set_coordinates(coords)
+    tiny_brain.compute_fourier_basis()
+    tiny_brain.plotting.update(default_plot_kws)
+
+    return tiny_brain
+
+def rewire(G, seed=0) :
+    degrees = np.sum(G.A.toarray(), axis=1)
+    new_adj = nx.to_numpy_array(nx.configuration_model(degrees,seed=seed))
+    new_G = graphs.Graph(new_adj, coords=G.coords)
+    new_G.compute_fourier_basis()
+    new_G.plotting = G.plotting
+
+    return new_G 

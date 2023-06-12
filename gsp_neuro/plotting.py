@@ -1,6 +1,7 @@
 import warnings
 
 import numpy as np
+import matplotlib as mpl
 from matplotlib import pyplot as plt
 from seaborn import color_palette as palette
 from nilearn import plotting
@@ -41,7 +42,7 @@ def plot_connectome(
 def plot_signal_2d(brain, signal, cmap="Spectral", outpath=None):
 
 
-    if isinstance(signal, np.ndarray) : 
+    if isinstance(signal, np.ndarray) :
         roi_values = signal
     else:
         roi_values = brain.get_signal(signal)
@@ -63,7 +64,7 @@ def plot_signal_3d(
 ):
 
     sym_map = False
-    if isinstance(signal, np.ndarray) : 
+    if isinstance(signal, np.ndarray) :
         roi_values = signal
     else:
         roi_values = brain.get_signal(signal)
@@ -210,3 +211,159 @@ def plot_signal_on_pruned_graph(brain, signal, title=None):
     plt.axis("off")
 
     return fig_signal
+
+
+# def plot_graph_pygsp(G, vertex_color, vertex_size,
+#                     edges, edge_color, edge_width,
+#                     colorbar, ax):
+
+#     # colorbar limits
+#     limits = [1.05*vertex_color.min(), 1.05*vertex_color.max()]
+
+#     # PLOT EDGES
+#     # create lines for each edge
+#     sources, targets, _ = G.get_edge_list()
+#     edges = [
+#         G.coords[sources],
+#         G.coords[targets],
+#     ]
+#     edges = np.stack(edges, axis=1)
+
+#     LineCollection = mpl.collections.LineCollection
+#     ax.add_collection(LineCollection(
+#         edges,
+#         linewidths=edge_width,
+#         colors=edge_color,
+#         linestyles=G.plotting['edge_style'],
+#         zorder=1,
+#     ))
+
+#     # TEST SIGNAL
+#     targets = G.coords.copy()
+#     targets[:,1] += vertex_color * 2
+#     signal_bars = [G.coords, targets]
+#     signal_bars = np.stack(signal_bars, axis=1)
+
+#     ax.add_collection(LineCollection(
+#         signal_bars,
+#         linewidths=edge_width,
+#         colors='r',
+#         linestyles=G.plotting['edge_style'],
+#         zorder=1,
+#     ))
+
+#     # PLOT NODES
+#     sc = ax.scatter(*G.coords.T,
+#                     c=vertex_color, s=vertex_size,
+#                     marker='o', linewidths=0, alpha=0.5, zorder=2,
+#                     vmin=limits[0], vmax=limits[1])
+
+#     # PLOT COLORBAR
+#     if G.coords.ndim != 1 and colorbar:
+#         plt.colorbar(sc, ax=ax)
+
+def plt_graph_sig_bar(G, signal, cmap, ax, title='default'):
+
+    # plot KWs
+    default_plot_kws = {'edge_color':[.6,.6,.6],
+                        'vertex_size':120,
+                        'edge_width':2.8,
+                        'vertex_color':[.2,.2,.2],
+                        'sig_width':3.5}
+    G.plotting.update(default_plot_kws)
+
+    # normalize signal 
+    if signal is not None:
+        signal = signal/np.amax(signal)
+    # PLOT EDGES
+    # create lines for each edge
+    sources, targets, _ = G.get_edge_list()
+    edges = [
+        G.coords[sources],
+        G.coords[targets],
+    ]
+    edges = np.stack(edges, axis=1)
+
+    LineCollection = mpl.collections.LineCollection
+    ax.add_collection(LineCollection(
+        edges,
+        linewidths=G.plotting['edge_width'],
+        colors=G.plotting['edge_color'],
+        linestyles=G.plotting['edge_style'],
+        zorder=1,
+    ))
+
+    # PLOT SIGNAL BARS
+    if signal is not None:
+        targets = G.coords.copy()
+        targets[:,1] += 1.5 * signal
+        signal_bars = [G.coords, targets]
+        signal_bars = np.stack(signal_bars, axis=1)
+
+        norm = plt.Normalize()
+        cmap = getattr(plt.cm, cmap)
+        ax.add_collection(LineCollection(
+            signal_bars,
+            linewidths=G.plotting['sig_width'],
+            colors=cmap(norm(signal)),
+            linestyles=G.plotting['edge_style'],
+            zorder=1,
+        ))
+
+    ax.set_xticks([])
+    ax.set_yticks([])
+    #ax.set_ylim([0,8])
+
+    if title=='default' and signal is not None:
+        smoothness = signal.T@G.L@signal
+        ax.set_title("Smoothness x'Lx = {:.2f}".format(smoothness))
+    else:
+        ax.set_title(title)
+
+    #sm = plt.cm.ScalarMappable(cmap=cmap)#, norm=plt.normalize(min=0, max=1))
+    #plt.colorbar(sm)
+
+    # PLOT NODES
+    sc = ax.scatter(*G.coords.T,
+                    c=[G.plotting['vertex_color']], s=G.plotting['vertex_size'],
+        
+                    marker='o', linewidths=0, alpha=1, zorder=2)
+
+
+def plt_grid_sig(G, signal, cmap, ax, title='default'):
+
+    # plot KWs
+    default_plot_kws = {'edge_color':[.6,.6,.6],
+                        'vertex_size':120,
+                        'edge_width':2.8,
+                        'vertex_color':[.2,.2,.2],
+                        'sig_width':3.5}
+    G.plotting.update(default_plot_kws)
+
+    # normalize signal 
+    if signal is not None:
+        signal = signal/np.amax(signal)
+
+    norm = plt.Normalize()
+    cmap = getattr(plt.cm, cmap)
+
+            # PLOT NODES
+    ax.scatter(*G.coords.T,
+                    c=cmap(norm(signal)), s=120,
+                    marker='o', linewidths=0, alpha=1, zorder=2)
+
+    ax.set_xticks([])
+    ax.set_yticks([])
+    #ax.set_ylim([0,8])
+
+    if title=='default' and signal is not None:
+        smoothness = signal.T@G.L@signal
+        ax.set_title("Smoothness x'Lx = {:.2f}".format(smoothness))
+    else:
+        ax.set_title(title)
+
+
+def plot_spectrum(G, s, ax):
+    ax.stem(G.U.T@s, "k", markerfmt="", linefmt="k-", basefmt="")
+    ax.set_ylabel('GFT Coefficients')
+    ax.set_xlabel('Graph Frequency')
