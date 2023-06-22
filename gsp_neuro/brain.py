@@ -27,7 +27,11 @@ class Brain:
         self.rois = list(df_coords[df_coords["Structures Names"].str.contains('ctx')]["Structures Names"].str.replace('ctx-',''))
         rois_ids = list(df_coords[df_coords["Structures Names"].str.contains('ctx')].index)
         self.G = self.G.subgraph(rois_ids)
-        self.adjacency = self.G.W.toarray()
+        A = self.G.W.toarray()
+        self.adjacency = A.copy()
+        A_bin = A.copy()
+        A_bin[A_bin!=0]=1.
+        self.bin_adj = A_bin.copy()
         self.G.compute_fourier_basis()
 
     def add_signal(self, signal_type, roi_values = None):
