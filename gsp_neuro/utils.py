@@ -144,7 +144,7 @@ def compute_metrics(G):
     return spl, GE, CC, LE
 
 def compute_stuff(p, n=500, k=4):
-    G = nx.watts_strogatz_graph(n=500,k=4,p=p)
+    G = nx.connected_watts_strogatz_graph(n=500,k=4,p=p)
     spectr = compute_spectrum(G)
     metrics = compute_metrics(G)
     return spectr, metrics
