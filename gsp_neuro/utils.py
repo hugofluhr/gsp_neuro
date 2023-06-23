@@ -124,3 +124,27 @@ def rewire(G, seed=0) :
     new_G.plotting = G.plotting
 
     return new_G 
+
+
+# Integration / Segregation experiment
+def compute_spectrum(G, lap_type= 'normalized'):
+    pygG = graphs.Graph(nx.to_numpy_array(G), lap_type=lap_type)
+    pygG.compute_fourier_basis()
+    return pygG.e
+
+def compute_metrics(G):
+    # Integration
+    spl = nx.average_shortest_path_length(G)
+    GE = nx.global_efficiency(G)
+
+    # Segregation
+    CC = nx.average_clustering(G)
+    LE = nx.local_efficiency(G)
+
+    return spl, GE, CC, LE
+
+def compute_stuff(p, n=500, k=4):
+    G = nx.watts_strogatz_graph(n=500,k=4,p=p)
+    spectr = compute_spectrum(G)
+    metrics = compute_metrics(G)
+    return spectr, metrics

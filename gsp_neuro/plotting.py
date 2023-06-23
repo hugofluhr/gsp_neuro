@@ -213,55 +213,6 @@ def plot_signal_on_pruned_graph(brain, signal, title=None):
     return fig_signal
 
 
-# def plot_graph_pygsp(G, vertex_color, vertex_size,
-#                     edges, edge_color, edge_width,
-#                     colorbar, ax):
-
-#     # colorbar limits
-#     limits = [1.05*vertex_color.min(), 1.05*vertex_color.max()]
-
-#     # PLOT EDGES
-#     # create lines for each edge
-#     sources, targets, _ = G.get_edge_list()
-#     edges = [
-#         G.coords[sources],
-#         G.coords[targets],
-#     ]
-#     edges = np.stack(edges, axis=1)
-
-#     LineCollection = mpl.collections.LineCollection
-#     ax.add_collection(LineCollection(
-#         edges,
-#         linewidths=edge_width,
-#         colors=edge_color,
-#         linestyles=G.plotting['edge_style'],
-#         zorder=1,
-#     ))
-
-#     # TEST SIGNAL
-#     targets = G.coords.copy()
-#     targets[:,1] += vertex_color * 2
-#     signal_bars = [G.coords, targets]
-#     signal_bars = np.stack(signal_bars, axis=1)
-
-#     ax.add_collection(LineCollection(
-#         signal_bars,
-#         linewidths=edge_width,
-#         colors='r',
-#         linestyles=G.plotting['edge_style'],
-#         zorder=1,
-#     ))
-
-#     # PLOT NODES
-#     sc = ax.scatter(*G.coords.T,
-#                     c=vertex_color, s=vertex_size,
-#                     marker='o', linewidths=0, alpha=0.5, zorder=2,
-#                     vmin=limits[0], vmax=limits[1])
-
-#     # PLOT COLORBAR
-#     if G.coords.ndim != 1 and colorbar:
-#         plt.colorbar(sc, ax=ax)
-
 def plt_graph_sig_bar(G, signal, cmap, ax, title='default'):
 
     # plot KWs
@@ -316,7 +267,7 @@ def plt_graph_sig_bar(G, signal, cmap, ax, title='default'):
 
     if title=='default' and signal is not None:
         smoothness = signal.T@G.L@signal
-        ax.set_title("Smoothness x'Lx = {:.2f}".format(smoothness))
+        ax.set_title("Smoothness f'Lf = {:.2f}".format(smoothness))
     else:
         ax.set_title(title)
 
@@ -358,12 +309,22 @@ def plt_grid_sig(G, signal, cmap, ax, title='default'):
 
     if title=='default' and signal is not None:
         smoothness = signal.T@G.L@signal
-        ax.set_title("Smoothness x'Lx = {:.2f}".format(smoothness))
+        ax.set_title("Smoothness f'Lf = {:.2f}".format(smoothness))
     else:
         ax.set_title(title)
 
 
-def plot_spectrum(G, s, ax):
-    ax.stem(G.U.T@s, "k", markerfmt="", linefmt="k-", basefmt="")
+def plot_spectrum(G, s, ax, no_dc=True):
+    gft = G.U.T@s
+    if no_dc:
+        gft=gft[1:]
+    ax.stem(gft, "k", markerfmt="", linefmt="k-", basefmt="")
     ax.set_ylabel('GFT Coefficients')
-    ax.set_xlabel('Graph Frequency')
+    ax.set_xlabel('Graph Frequency Index')
+
+    # get y-axis limits of the plot
+    low, high = ax.get_ylim()
+    # find the new limits
+    bound = max(abs(low), abs(high))
+    # set new limits
+    ax.set_ylim(-bound, bound)
