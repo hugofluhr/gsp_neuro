@@ -4,13 +4,13 @@ import numpy as np
 import matplotlib as mpl
 from matplotlib import pyplot as plt
 from seaborn import color_palette as palette
-from nilearn import plotting
+from nilearn import plotting, datasets
 from pygsp import graphs
 
 from gsp_neuro import data_loading as dload
 from gsp_neuro import utils as ut
 from gsp_neuro.deps.cmtk_viz import (
-    plot_lausanne2018_surface_ctx,
+    plot_lausanne2018_surface_ctx, plot_lausanne2018_surface_ctx_mini
 )  # to make it accessible through this module
 
 
@@ -51,6 +51,57 @@ def plot_signal_2d(brain, signal, cmap="Spectral", outpath=None):
         roi_values, scale=brain.scale, cmap=cmap, outpath=outpath
     )
 
+def plot_signal_surf(roi_values, cmap='Spectral'):
+    
+    vmin = min([0, min(roi_values)])
+    vmax = max(roi_values)
+    max_val = max([abs(vmin), vmax])
+    vmax = max_val
+    vmin = -max_val
+
+    signal_mesh_space = ut.atlas2mesh_space(roi_values, 3)
+    roi_vect_left = signal_mesh_space['left']
+    roi_vect_right = signal_mesh_space['right']
+
+    fsaverage = datasets.fetch_surf_fsaverage(mesh='fsaverage')
+
+    fig, axs = plt.subplots(1, 3, figsize=(12, 5),
+                                subplot_kw={'projection': '3d'})
+
+    plotting.plot_surf_roi(fsaverage['pial_right'], roi_map=roi_vect_right,
+                            hemi='right', view='lateral',
+                            bg_map=fsaverage['sulc_right'], bg_on_data=True,
+                            darkness=.5, cmap=cmap,
+                            vmin=vmin, vmax=vmax,
+                            figure=fig, axes=axs[0])
+
+    plotting.plot_surf_roi(fsaverage['pial_right'], roi_map=roi_vect_right,
+                            hemi='right', view='dorsal',
+                            bg_map=fsaverage['sulc_right'], bg_on_data=True,
+                            darkness=.5, cmap=cmap,
+                            vmin=vmin, vmax=vmax,
+                            figure=fig, axes=axs[1])
+
+    plotting.plot_surf_roi(fsaverage['pial_left'], roi_map=roi_vect_left,
+                            hemi='left', view='dorsal',
+                            bg_map=fsaverage['sulc_left'], bg_on_data=True,
+                            darkness=.5, cmap=cmap,
+                            vmin=vmin, vmax=vmax,
+                            figure=fig, axes=axs[1])
+
+    plotting.plot_surf_roi(fsaverage['pial_left'], roi_map=roi_vect_left,
+                            hemi='left', view='lateral',
+                            bg_map=fsaverage['sulc_left'], bg_on_data=True,
+                            darkness=.5, cmap=cmap,
+                            vmin=vmin, vmax=vmax,
+                            figure=fig, axes=axs[2])
+
+    axs[1].view_init(elev=90, azim=270)
+    axs[1].set_box_aspect(None, zoom=1.3)
+
+    fig.tight_layout()
+
+    return fig
 
 def plot_signal_3d(
     brain,
