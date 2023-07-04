@@ -16,8 +16,10 @@ class Brain:
 
     def load_graph(self, lap_type = 'normalized', keep_sub_cortical = False):
 
-        if self.sub_ID == 'consensus':
-            self.G = graphs.Graph(dload.load_consensus(self.path), lap_type=lap_type)
+        if self.sub_ID == 'consensus_w':
+            self.G = graphs.Graph(dload.load_consensus(self.path, weighted=True), lap_type=lap_type)
+        elif self.sub_ID == 'consensus_bin':
+            self.G = graphs.Graph(dload.load_consensus(self.path, weighted=False), lap_type=lap_type)
         else:
             self.G = graphs.Graph(dload.load_connectome(self.path, field=self.field), lap_type=lap_type)
     

@@ -36,7 +36,10 @@ def get_subjects(data_path, subjects_IDS_path=None):
 
 
 def get_subject_dir(data_path, subject_ID):
-    return op.join(data_path, "BIOPSYCHO_CTRLS", subject_ID)
+    if "consensus" in subject_ID:
+        return op.join(data_path, "BIOPSYCHO_CTRLS", "consensus")
+    else:
+        return op.join(data_path, "BIOPSYCHO_CTRLS", subject_ID)
 
 
 def get_sub_connectomes_paths(subject_path, scale=1):
@@ -45,7 +48,6 @@ def get_sub_connectomes_paths(subject_path, scale=1):
     # to handle single directory case
     if isinstance(subject_path, str):
         subject_path = [subject_path]
-
     for sub_path in subject_path:
         if "consensus" in sub_path:
             connectome_paths.append(
@@ -77,9 +79,12 @@ def load_connectome(connectome_path, field="fibDensity"):
         print("No nFiber field in the file")
 
 
-def load_consensus(consensus_path):
+def load_consensus(consensus_path, weighted=True):
     data = np.load(consensus_path)
-    return data["G"] * data["av_weight"]
+    if weighted:
+        return data["G"] * data["av_weight"]
+    else:
+        return data['G']
 
 
 def read_fscolorlut(lutFile):
