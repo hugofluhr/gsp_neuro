@@ -1,5 +1,5 @@
 [project]
-name = "gsp_neuro"
+name = "gspneuro"
 version = "0.0.1"
 authors = [
   { name="Hugo Fluhr", email="hugo.fluhr@gmail.com" },

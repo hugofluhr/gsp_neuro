@@ -1,8 +1,9 @@
-from gsp_neuro import plotting as viz
-from gsp_neuro.brain import Brain
+import sys
+sys.path.append('/Users/hugofluhr/chuv/repositories/gsp_neuro/')
+from gspneuro import plotting as viz
+from gspneuro.brain import Brain
 import os
 from multiprocessing import Pool
-import sys
 from functools import partial
 from tqdm import tqdm
 
@@ -10,7 +11,7 @@ def process_eigmode(eigmode, consensus, outdir):
     roi_values = consensus.get_signal(eigmode)
     filename = "eigmode_{:02d}.png".format(eigmode)
     outpath = os.path.join(outdir, filename)
-    fig = viz.plot_signal_surf(roi_values=roi_values)
+    fig = viz.plot_signal_surf_full(roi_values=roi_values)
     fig.savefig(outpath, dpi=100)
 
 if __name__=='__main__':
@@ -34,10 +35,10 @@ if __name__=='__main__':
 
     if weighted:
         consensus = Brain(data_base_directory, 'consensus_w', scale)
-        outdir = '/Users/hugofluhr/chuv/repositories/gsp_neuro/figures/consensus_harmonics_weighted_lr/'
+        outdir = '/Users/hugofluhr/chuv/repositories/gsp_neuro/figures/new_consensus_harmonics_weighted_lr/'
     else:
         consensus = Brain(data_base_directory, 'consensus_bin', scale)
-        outdir = '/Users/hugofluhr/chuv/repositories/gsp_neuro/figures/consensus_harmonics_bin_lr/'
+        outdir = '/Users/hugofluhr/chuv/repositories/gsp_neuro/figures/new_consensus_harmonics_bin_lr/'
 
     consensus.load_graph(lap_type='normalized')
 

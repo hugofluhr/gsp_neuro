@@ -1,5 +1,5 @@
-from gsp_neuro import plotting as viz
-from gsp_neuro.brain import Brain
+from gspneuro import plotting as viz
+from gspneuro.brain import Brain
 import os
 from multiprocessing import Pool
 import sys
