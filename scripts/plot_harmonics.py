@@ -6,39 +6,41 @@ import os
 from multiprocessing import Pool
 from functools import partial
 from tqdm import tqdm
+import argparse
 
 def process_eigmode(eigmode, consensus, outdir):
     roi_values = consensus.get_signal(eigmode)
     filename = "eigmode_{:02d}.png".format(eigmode)
     outpath = os.path.join(outdir, filename)
-    fig = viz.plot_signal_surf_full(roi_values=roi_values)
-    fig.savefig(outpath, dpi=100)
+    viz.plot_signal_surf_full(roi_values=roi_values, outfile=outpath)
 
 if __name__=='__main__':
-    if len(sys.argv) < 2:
-        print("Please provide the scale as a command-line argument.")
-        sys.exit(1)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--scale", type=int, default=3, help="The scale")
+    parser.add_argument("--nb_modes", type=int, default=20, help="The number of eigenmodes")
+    parser.add_argument("--weighted", type=bool, default=False, help="Whether weighted or not")
+    args = parser.parse_args()
 
-    data_base_directory = "/Users/hugofluhr/chuv/data/"
+    scale = args.scale
+    nb_modes = args.nb_modes
+    weighted = args.weighted
 
-    scale = int(sys.argv[1])
-    nb_modes = int(sys.argv[2])
-    weighted = bool(int(sys.argv[3]))
-
-    print('scale :', scale)
-    print('nb eigenmodes :', nb_modes)
-    print('weighted :', weighted)
+    print('scale:', scale)
+    print('nb eigenmodes:', nb_modes)
+    print('weighted:', weighted)
 
     conf = input("Proceed? (y/n)")
     if conf != 'y':
         sys.exit()
 
+    data_base_directory = "/Users/hugofluhr/chuv/data/"
+
     if weighted:
         consensus = Brain(data_base_directory, 'consensus_w', scale)
-        outdir = '/Users/hugofluhr/chuv/repositories/gsp_neuro/figures/new_consensus_harmonics_weighted_lr/'
+        outdir = '/Users/hugofluhr/chuv/repositories/gsp_neuro/figures/february_2024/consensus_harmonics_weighted_lr/'
     else:
         consensus = Brain(data_base_directory, 'consensus_bin', scale)
-        outdir = '/Users/hugofluhr/chuv/repositories/gsp_neuro/figures/new_consensus_harmonics_bin_lr/'
+        outdir = '/Users/hugofluhr/chuv/repositories/gsp_neuro/figures/february_2024/consensus_harmonics_bin_lr/'
 
     consensus.load_graph(lap_type='normalized')
 
