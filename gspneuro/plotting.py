@@ -104,21 +104,25 @@ def plot_signal_surf(roi_values, cmap='Spectral'):
 
     return fig
 
-def plot_signal_surf_full(roi_values, outfile, cmap='Spectral'):
-    
-    vmin = min([0, min(roi_values)])
-    vmax = max(roi_values)
-    max_val = max([abs(vmin), vmax])
-    vmax = max_val
-    vmin = -max_val
+def plot_signal_surf_full(roi_values, outfile, cmap='Spectral',sym_map=True, scale=3):
 
-    signal_mesh_space = ut.atlas2mesh_space(roi_values, 3)
+    if sym_map:
+        vmin = min([0, min(roi_values)])
+        vmax = max(roi_values)
+        max_val = max([abs(vmin), vmax])
+        vmax = max_val
+        vmin = -max_val
+    else: 
+        vmin = min(roi_values)
+        vmax = max(roi_values)
+
+    signal_mesh_space = ut.atlas2mesh_space(roi_values, scale)
     roi_vect_left = signal_mesh_space['left']
     roi_vect_right = signal_mesh_space['right']
 
     fsaverage = datasets.fetch_surf_fsaverage(mesh='fsaverage')
 
-    views = ['lateral','medial',(90,90),(90,90),(270,90),(270,90),'medial','lateral']
+    views = ['lateral','medial',(90,270),(90,270),(270,270),(270,270),'medial','lateral']
     hemis = ['right','right','right','left','right','left','left','left']
     roi_maps = [roi_vect_right,roi_vect_right,roi_vect_right,roi_vect_left,roi_vect_right,roi_vect_left,roi_vect_left,roi_vect_left]
     ax_idx = [0, 1, 2, 2, 3, 3, 4, 5]
@@ -403,13 +407,16 @@ def plt_grid_sig(G, signal, cmap, ax, title='default'):
         ax.set_title(title)
 
 
-def plot_spectrum(G, s, ax, no_dc=True):
+def plot_spectrum(G, s, ax, no_dc=True, x_ax=None):
     gft = G.U.T@s
-    x_ax = np.arange(len(gft))
+    if x_ax is None:
+        x_ax = np.arange(len(gft))
+
     if no_dc:
         gft=gft[1:]
         x_ax=x_ax[1:]
-    ax.stem(x_ax, gft, "k", markerfmt="", linefmt="k-", basefmt="")
+    
+    ax.stem(x_ax, gft[x_ax], "k", markerfmt="", linefmt="k-", basefmt="")
     ax.set_ylabel('GFT Coefficients')
     ax.set_xlabel('Graph Frequency Index')
 
